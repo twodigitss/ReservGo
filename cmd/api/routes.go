@@ -13,10 +13,13 @@ func Routes(r *gin.Engine, c Container) {
 		c.IndentedJSON(http.StatusAccepted, gin.H{"message":"Hello Gin"})
 	})
 
-	tables := v1.Group("/tables") 
-	{ tables.GET("/list", c.Tables.ListAllTables ) }
+	tables := v1.Group("/tables")
+	{ 	tables.GET("/list", c.Tables.ListAllTables ) }
 
 	users := v1.Group("/users")
-	{ users.GET("/list", c.Users.ListAllUsers) }
+	{ 	users.GET("/list", c.Users.ListAllUsers)
+		users.GET("/find/:uuid", c.Users.FindUserById)
+		users.POST("/create", c.Users.CreateUser)
+	}
 
 }

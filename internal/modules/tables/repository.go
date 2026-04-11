@@ -8,6 +8,6 @@ import "context"
 //confundes menos
 
 type TableModuleInterface interface {
-	ListAllTables(ctx context.Context) (*[]DBTables, error)
+	ListAllTables(ctx context.Context) ([]DBTables, error)
 	ListFirstTable(ctx context.Context) (*DBTables, error)
 }

@@ -3,7 +3,6 @@ package repos
 import (
 	"context"
 	"fmt"
-	"time"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twodigitss/reserv-go/internal/modules/tables"
 )
@@ -20,8 +19,7 @@ func NewTableRepo(db *pgxpool.Pool) *TableRepoImpl{
 func (this *TableRepoImpl) ListFirstTable(ctx context.Context) (*tables.DBTables, error){
 	var result tables.DBTables
 	err := this.DB.QueryRow(
-		context.Background(),
-		"select id,created_at,reserved,table_name from reservations_demo.dinner_tables",
+		ctx, "select id,created_at,reserved,table_name from reservations_demo.dinner_tables",
 	).Scan(&result.Id, &result.CreatedAt, &result.Reserved, &result.TableName)
 
 	if err != nil {
@@ -33,10 +31,9 @@ func (this *TableRepoImpl) ListFirstTable(ctx context.Context) (*tables.DBTables
 }
 
 //Returns all the table "Tables"
-func (this *TableRepoImpl) ListAllTables(ctx context.Context) (*[]tables.DBTables, error){
+func (this *TableRepoImpl) ListAllTables(ctx context.Context) ([]tables.DBTables, error){
 	rows, err := this.DB.Query(
-		context.Background(), 
-		"select id,created_at,reserved,table_name from reservations_demo.dinner_tables",
+		ctx, "select id,created_at,reserved,table_name from reservations_demo.dinner_tables",
 	)
 
 	if err != nil {
@@ -47,22 +44,16 @@ func (this *TableRepoImpl) ListAllTables(ctx context.Context) (*[]tables.DBTable
 	defer rows.Close()
 
 	var myRows []tables.DBTables;
-
 	for rows.Next() {
-		var id, table_name string
-		var created_at time.Time
-		var reserved bool
+		var thing tables.DBTables
 
-		err := rows.Scan(&id, &created_at, &reserved, &table_name) 
+		err := rows.Scan(&thing.Id, &thing.CreatedAt, &thing.Reserved, &thing.TableName)
 		if err != nil {
 			fmt.Print("scan failed: %w", err)
 			return nil, err
 		}
 
-		myRows = append(myRows, 
-			tables.DBTables{Id: id, CreatedAt: created_at, Reserved: reserved, TableName: table_name},
-		)
-
+		myRows = append(myRows, thing)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -70,5 +61,5 @@ func (this *TableRepoImpl) ListAllTables(ctx context.Context) (*[]tables.DBTable
 		return nil, err
 	}
 
-	return &myRows,nil
+	return myRows,nil
 }

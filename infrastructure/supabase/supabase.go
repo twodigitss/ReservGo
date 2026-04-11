@@ -8,7 +8,7 @@ import (
 
 func Connect() (*pgxpool.Pool, error) {
 	conn, err := pgxpool.New(
-		context.Background(), 
+		context.Background(),
 		configs.DB_URL,
 	)
 
