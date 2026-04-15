@@ -81,21 +81,23 @@ func (this *UserRepoImpl) CreateUser(ctx context.Context, body users.DBClient) (
 
 	duplicated, err := helpers.DuplicatedEmail(ctx, this.DB, body.Email)
 	if duplicated {
-		return nil, fmt.Errorf("User with same email already registered!")
+		const res string = "User with same email already registered!"
+		fmt.Println(res)
+		return nil, fmt.Errorf(res)
 	}
 	if err != nil{
+		fmt.Println("Error checking duplicated email", err)
 		return nil, err
 	}
 
 	var query users.DBClient
-	err = this.DB.QueryRow(
-		ctx,
+	err = this.DB.QueryRow( ctx,
 		`INSERT INTO reservations_demo.clients (name, last_name, email) values ($1,$2,$3)
 		 RETURNING uuid, created_at; `, &body.Name, &body.LastName, &body.Email,
 	).Scan(&query.UUID, &query.CreatedAt)
 
 	if err != nil {
-		fmt.Print("Error searching user", err)
+		fmt.Print("Error inserting user: ", err)
 		return nil, err
 	}
 

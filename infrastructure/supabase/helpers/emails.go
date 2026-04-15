@@ -7,16 +7,12 @@ import (
 
 // this function also works as a email finder, true if something was found
 func DuplicatedEmail(ctx context.Context, DB *pgxpool.Pool, _email string) (bool, error) {
-	var result string
-	err := DB.QueryRow(ctx, "SELECT email FROM reservations_demo.clients WHERE email=$1", _email).Scan(&result)
+	var result bool
+	err := DB.QueryRow(
+		ctx, "SELECT EXISTS(SELECT 1 FROM reservations_demo.clients WHERE email=$1)", _email,
+	).Scan(&result)
+	if err != nil { return false, err }
 
-	switch {
-	case err != nil:
-		return false, err
-	case result == "":
-		return false, nil
-	default:
-		return true, nil
-	}
+	return result, nil
 
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/twodigitss/reserv-go/internal/modules/users"
+	"github.com/twodigitss/reserv-go/internal/shared"
 )
 
 type UserHandler struct{
@@ -16,41 +17,61 @@ func NewUserHandler() *UserHandler {
 
 func (this *UserHandler) ListAllUsers(g *gin.Context){
 	result, err := this.Service.ListAllUsers(g.Request.Context())
-
 	if err != nil {
-		g.IndentedJSON(http.StatusInternalServerError, gin.H{"Error":err})
+		shared.JSON(g, http.StatusInternalServerError, gin.H{"Error":err})
+		return
 	}
-	 g.IndentedJSON(http.StatusOK, result)
-
+	shared.JSON(g, http.StatusOK, result)
 }
 
-func (this *UserHandler) FindUserById(c *gin.Context){
-	var _id string = c.Param("uuid")
+func (this *UserHandler) FindUserById(g *gin.Context){
+	var _id string = g.Param("uuid")
 
-	result, err := this.Service.FindUserById(c.Request.Context(), _id)
+	result, err := this.Service.FindUserById(g.Request.Context(), _id)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"Error finding": err.Error()})
+		shared.JSON(g, http.StatusBadRequest, gin.H{"Error finding": err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, result)
+	shared.JSON(g, http.StatusOK, result)
 }
 
-func (this *UserHandler) CreateUser(c *gin.Context){
+func (this *UserHandler) CreateUser(g *gin.Context){
 	var _body users.HttpBodyClient
-	if err := c.ShouldBindJSON(&_body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := g.ShouldBindJSON(&_body); err != nil {
+		shared.JSON(g, http.StatusBadRequest, gin.H{"Error binding the request body": err.Error()})
 		return
 	}
 
-	// c.IndentedJSON(http.StatusOK, gin.H{"DEBUG: sent body: " : _body})
-	var dto users.DBClient;
+	// shared.JSON(g, http.StatusOK, gin.H{"DEBUG: sent body: " : _body})
+	var dto users.DBClient
 	dto.Name = _body.Name
 	dto.LastName = _body.LastName
 	dto.Email = _body.Email
 
-	result, err := this.Service.CreateUser(c.Request.Context(), dto)
+	result, err := this.Service.CreateUser(g.Request.Context(), dto)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		shared.JSON(g, http.StatusInternalServerError, gin.H{"Error creating user": err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, result)
 
+	var res users.HttpResClient = users.HttpResClient{
+		UUID:      result.UUID,
+		CreatedAt: result.CreatedAt,
+		Name:      result.Name,
+		LastName:  result.LastName,
+		Email:     result.Email,
+	}
+
+	shared.JSON(g, http.StatusOK, res)
+
+}
+
+func (this *UserHandler) DeleteUser(g *gin.Context){
+	var _id string = g.Param("uuid")
+	result, err := this.Service.DeleteUser(g.Request.Context(), _id)
+	if err != nil {
+		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	shared.JSON(g, http.StatusOK, result)
 }

@@ -9,5 +9,7 @@ import "context"
 
 type TableModuleInterface interface {
 	ListAllTables(ctx context.Context) ([]DBTables, error)
-	ListFirstTable(ctx context.Context) (*DBTables, error)
+    FindTableById(ctx context.Context, uuid string) (*DBTables, error)
+    SetTableAvailable(ctx context.Context, uuid string) (*DBTables, error)
+    SetTableOccupied(ctx context.Context, uuid string) (*DBTables, error)
 }
