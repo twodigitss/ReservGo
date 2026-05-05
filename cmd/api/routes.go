@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/twodigitss/reserv-go/configs"
 )
 
 // General route handling
@@ -33,7 +32,7 @@ func Routes(r *gin.Engine, c Container) {
 				endpoints,
 				gin.H{
 					"method": route.Method,
-					"path": configs.URL + route.Path,
+					"path": route.Path,
 				},
 			)
 		}

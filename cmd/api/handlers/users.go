@@ -18,10 +18,22 @@ func NewUserHandler() *UserHandler {
 func (this *UserHandler) ListAllUsers(g *gin.Context){
 	result, err := this.Service.ListAllUsers(g.Request.Context())
 	if err != nil {
-		shared.JSON(g, http.StatusInternalServerError, gin.H{"Error":err})
+		shared.JSON(g, http.StatusInternalServerError, gin.H{"error":err})
 		return
 	}
-	shared.JSON(g, http.StatusOK, result)
+
+	var res []users.HttpResClient
+	for _, r := range result {
+		res = append(res, users.HttpResClient{
+			UUID:      r.UUID,
+			CreatedAt: r.CreatedAt,
+			Name:      r.Name,
+			LastName:  r.LastName,
+			Email:     r.Email,
+		})
+	}
+
+	shared.JSON(g, http.StatusOK, res)
 }
 
 func (this *UserHandler) FindUserById(g *gin.Context){
@@ -29,16 +41,25 @@ func (this *UserHandler) FindUserById(g *gin.Context){
 
 	result, err := this.Service.FindUserById(g.Request.Context(), _id)
 	if err != nil {
-		shared.JSON(g, http.StatusBadRequest, gin.H{"Error finding": err.Error()})
+		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	shared.JSON(g, http.StatusOK, result)
+
+	var res users.HttpResClient = users.HttpResClient{
+		UUID:      result.UUID,
+		CreatedAt: result.CreatedAt,
+		Name:      result.Name,
+		LastName:  result.LastName,
+		Email:     result.Email,
+	}
+
+	shared.JSON(g, http.StatusOK, res)
 }
 
 func (this *UserHandler) CreateUser(g *gin.Context){
 	var _body users.HttpBodyClient
 	if err := g.ShouldBindJSON(&_body); err != nil {
-		shared.JSON(g, http.StatusBadRequest, gin.H{"Error binding the request body": err.Error()})
+		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -50,7 +71,7 @@ func (this *UserHandler) CreateUser(g *gin.Context){
 
 	result, err := this.Service.CreateUser(g.Request.Context(), dto)
 	if err != nil {
-		shared.JSON(g, http.StatusInternalServerError, gin.H{"Error creating user": err.Error()})
+		shared.JSON(g, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -73,5 +94,14 @@ func (this *UserHandler) DeleteUser(g *gin.Context){
 		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	shared.JSON(g, http.StatusOK, result)
+
+	var res users.HttpResClient = users.HttpResClient{
+		UUID:      result.UUID,
+		CreatedAt: result.CreatedAt,
+		Name:      result.Name,
+		LastName:  result.LastName,
+		Email:     result.Email,
+	}
+
+	shared.JSON(g, http.StatusOK, res)
 }

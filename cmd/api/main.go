@@ -20,8 +20,15 @@ type Container struct {
 }
 
 func BuildContainer(pool *pgxpool.Pool) *Container {
-	tableService := tables.NewService(repos.NewTableRepo(pool))
-	userService := users.NewService(repos.NewUserRepo(pool))
+	//repos
+	tableRepo := repos.NewTableRepo(pool)
+	userRepo := repos.NewUserRepo(pool)
+
+	//services
+	tableService := tables.NewService(tableRepo)
+	userService := users.NewService(userRepo)
+
+	//usecases
 
 	return &Container{
 		Tables: &handlers.TableHandler{Service: tableService},
