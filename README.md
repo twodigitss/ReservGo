@@ -1,4 +1,4 @@
-# ReservGo
+# reserv-go
 A Project to explore Clean Architecture principles and strict separation of concerns.
 
 ## Live API
