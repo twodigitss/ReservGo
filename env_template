@@ -2,6 +2,4 @@ DB_POOL_URL = url
 DB_APIK = key
 ENV = development or production
 
-#PROD_URL = https://YourApp.onrender.com/
-#DEV_URL = localhost
 PORT = 8080

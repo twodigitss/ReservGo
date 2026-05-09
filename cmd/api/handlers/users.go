@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/twodigitss/reserv-go/internal/modules/users"
 	"github.com/twodigitss/reserv-go/internal/shared"
 )
@@ -38,8 +39,13 @@ func (this *UserHandler) ListAllUsers(g *gin.Context){
 
 func (this *UserHandler) FindUserById(g *gin.Context){
 	var _id string = g.Param("uuid")
+	parsedID, err := uuid.Parse(_id) // id viene como string del path param
+	if err != nil {
+		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	result, err := this.Service.FindUserById(g.Request.Context(), _id)
+	result, err := this.Service.FindUserById(g.Request.Context(), parsedID.String())
 	if err != nil {
 		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -89,7 +95,13 @@ func (this *UserHandler) CreateUser(g *gin.Context){
 
 func (this *UserHandler) DeleteUser(g *gin.Context){
 	var _id string = g.Param("uuid")
-	result, err := this.Service.DeleteUser(g.Request.Context(), _id)
+	parsedID, err := uuid.Parse(_id)
+	if err != nil {
+		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := this.Service.DeleteUser(g.Request.Context(), parsedID.String())
 	if err != nil {
 		shared.JSON(g, http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

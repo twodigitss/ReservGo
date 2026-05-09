@@ -61,6 +61,8 @@ func (this *TableReservation ) BookATable(ctx context.Context, UUID string, TABL
 	if err != nil { return err }
 	fmt.Print(sucess)
 
+	//format the success response into whatever body reservationService expects
+
 	//insert in table
 	//insert table reservations_demo.reservations_online () values () returning &dbRow{}
 	// get &dbRow{}

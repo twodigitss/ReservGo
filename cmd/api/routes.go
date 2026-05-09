@@ -10,17 +10,21 @@ func Routes(r *gin.Engine, c Container) {
 	v1 := r.Group("/v1")
 
 	tables := v1.Group("/tables")
-	{ 	tables.GET("/list", c.Tables.ListAllTables )
+	{	tables.GET("/list", c.Tables.ListAllTables )
 		tables.GET("/find/:id", c.Tables.FindTableById)
 		tables.PUT("/set-available/:id", c.Tables.SetTableAvailable)
 		tables.PUT("/set-occupied/:id", c.Tables.SetTableOccupied)
 	}
 
 	users := v1.Group("/users")
-	{ 	users.GET("/list", c.Users.ListAllUsers)
+	{	users.GET("/list", c.Users.ListAllUsers)
 		users.GET("/find/:uuid", c.Users.FindUserById)
 		users.POST("/create", c.Users.CreateUser)
 		users.DELETE("/delete/:uuid", c.Users.DeleteUser)
+	}
+
+	reserv := v1.Group("/reserv")
+	{	reserv.POST("/book", c.Reservation.Book)
 	}
 
 	r.GET("/", func(c *gin.Context) {
