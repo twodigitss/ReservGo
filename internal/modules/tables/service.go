@@ -17,13 +17,13 @@ func (this *TableService) ListAllTables(ctx context.Context) ([]DBTables, error)
 	return this.repo.ListAllTables(ctx)
 }
 
-func (this *TableService) FindTableById(ctx context.Context, uuid string) (*DBTables, error) {
+func (this *TableService) FindTableById(ctx context.Context, uuid string) (DBTables, error) {
 	return this.repo.FindTableById(ctx, uuid)
 }
-func (this *TableService) SetTableAvailable(ctx context.Context, uuid string) (*DBTables, error) {
+func (this *TableService) SetTableAvailable(ctx context.Context, uuid string) (DBTables, error) {
 	return this.repo.SetTableAvailable(ctx, uuid)
 }
 
-func (this *TableService) SetTableOccupied(ctx context.Context, uuid string) (*DBTables, error) {
+func (this *TableService) SetTableOccupied(ctx context.Context, uuid string) (DBTables, error) {
 	return this.repo.SetTableOccupied(ctx, uuid)
 }

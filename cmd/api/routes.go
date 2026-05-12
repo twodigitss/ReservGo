@@ -23,10 +23,17 @@ func Routes(r *gin.Engine, c Container) {
 		users.DELETE("/delete/:uuid", c.Users.DeleteUser)
 	}
 
-	reserv := v1.Group("/reserv")
+	reserv := v1.Group("/reservation")
 	{	reserv.POST("/book", c.Reservation.Book)
+		reserv.PATCH("/update/:uuid", c.Reservation.Update)
+		reserv.GET("/cancel/:uuid", c.Reservation.Cancel)
+		reserv.GET("/exist/:uuid", c.Reservation.Exists)
+		reserv.GET("/get-by-uuid/:uuid", c.Reservation.GetByID)
+		reserv.GET("/get-by-client-uuid/:uuid", c.Reservation.GetByClientUUID)
+
 	}
 
+	//TODO: make it html template, idk
 	r.GET("/", func(c *gin.Context) {
 		routes := r.Routes() // []gin.RouteInfo
 

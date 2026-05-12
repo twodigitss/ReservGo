@@ -19,12 +19,12 @@ func NewUserRepo(db *pgxpool.Pool) *UserRepoImpl {
 //Returns all the table users
 func (this *UserRepoImpl) ListUsers(ctx context.Context) ([]users.DBClient, error) {
 
-	rows, err := this.DB.Query(
-		ctx, "SELECT uuid,created_at,name,last_name,email FROM reservations_demo.clients",
+	rows, err := this.DB.Query(ctx, 
+		`SELECT uuid,created_at,name,last_name,email 
+		FROM reservations_demo.clients`,
 	)
 
 	if err != nil {
-		fmt.Print("ERROR GETTING QUERY: ", err)
 		return nil, err
 	}
 
@@ -34,85 +34,85 @@ func (this *UserRepoImpl) ListUsers(ctx context.Context) ([]users.DBClient, erro
 
 	for rows.Next(){
 		var thing users.DBClient
-
 		err := rows.Scan(&thing.UUID, &thing.CreatedAt, &thing.Name, &thing.LastName, &thing.Email,  )
 		if err != nil {
-			fmt.Print("ERROR SCANNING DATA", err)
 			return nil, err
 		}
-
 		user_ = append(user_, thing)
-
 	}
 
 	if err:= rows.Err(); err!=nil{
-		fmt.Print("ERROR DURING ROW ANALYSIS", err)
 		return nil, err
 	}
 
 	return user_, nil
 }
 
-func (this *UserRepoImpl) FindUserById(ctx context.Context, _uuid string)(*users.DBClient, error){
+func (this *UserRepoImpl) FindUserById(ctx context.Context, _uuid string)(users.DBClient, error){
 	var result users.DBClient;
-	err := this.DB.QueryRow(
-		ctx, "SELECT uuid, name, last_name, email, created_at from reservations_demo.clients WHERE uuid=$1",
-		_uuid,
+	err := this.DB.QueryRow(ctx, 
+		`SELECT uuid, name, last_name, email, created_at 
+		FROM reservations_demo.clients 
+		WHERE uuid=$1`, _uuid,
 	).Scan(&result.UUID, &result.Name, &result.LastName, &result.Email, &result.CreatedAt)
 
 	if err != nil {
 		fmt.Print("Error searching user", err)
-		return nil, err
+		return users.DBClient{}, err
 	}
 
-	return &result, nil
+	return result, nil
 
 }
 
-func (this *UserRepoImpl) CreateUser(ctx context.Context, body users.DBClient) (*users.DBClient, error){
+func (this *UserRepoImpl) CreateUser(ctx context.Context, body users.DBClient) (users.DBClient, error){
 
 	duplicated, err := helpers.DuplicatedEmail(ctx, this.DB, body.Email)
 	if duplicated {
 		const res string = "User with same email already registered!"
 		fmt.Println(res)
-		return nil, fmt.Errorf(res)
+		return users.DBClient{}, fmt.Errorf(res)
 	}
 	if err != nil{
 		fmt.Println("Error checking duplicated email", err)
-		return nil, err
+		return users.DBClient{}, err
 	}
 
 	var query users.DBClient
 	err = this.DB.QueryRow( ctx,
-		`INSERT INTO reservations_demo.clients (name, last_name, email) values ($1,$2,$3)
-		 RETURNING uuid, created_at; `, &body.Name, &body.LastName, &body.Email,
+		`INSERT INTO reservations_demo.clients 
+		(name, last_name, email) values 
+		($1,$2,$3)
+		RETURNING uuid, created_at; `, 
+		&body.Name, &body.LastName, &body.Email,
 	).Scan(&query.UUID, &query.CreatedAt)
 
 	if err != nil {
 		fmt.Print("Error inserting user: ", err)
-		return nil, err
+		return users.DBClient{}, err
 	}
 
 	query.Name = body.Name
 	query.LastName = body.LastName
 	query.Email = body.Email
 
-	return &query, nil
+	return query, nil
 
 }
 
-func (this *UserRepoImpl) DeleteUser(ctx context.Context, _uuid string) (*users.DBClient, error) {
+func (this *UserRepoImpl) DeleteUser(ctx context.Context, _uuid string) (users.DBClient, error) {
 	var query users.DBClient
-	err := this.DB.QueryRow(
-		ctx, `DELETE FROM reservations_demo.clients WHERE uuid = $1
+	err := this.DB.QueryRow( ctx, 
+		`DELETE FROM reservations_demo.clients 
+		WHERE uuid = $1
 		RETURNING uuid, email, name, last_name, created_at;`, _uuid,
 	).Scan(&query.UUID, &query.Email, &query.Name, &query.LastName, &query.CreatedAt)
 
 	if err != nil {
 		fmt.Print("Error deleting user", err.Error())
-		return nil, err
+		return users.DBClient{}, err
 	}
 
-	return &query, nil
+	return query, nil
 
 }
