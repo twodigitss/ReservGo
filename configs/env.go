@@ -30,14 +30,6 @@ func LoadEnv(){
 	DB_APIK = os.Getenv("DB_APIK")
 	PORT := os.Getenv("PORT")
 	ENV = os.Getenv("ENV")
-	// DEV := os.Getenv("DEV_URL")
-	// _= os.Getenv("PROD_URL")
 	URL = fmt.Sprintf(":%s", PORT)
-
-	// switch ENV {
-	// 	case "development":{ URL = fmt.Sprintf("%s:%s", DEV, PORT) }
-	// 	case "production": { URL = fmt.Sprintf(":%s", PORT) }
-	// 	default: { URL = fmt.Sprintf("%s:%s", DEV, PORT) }
-	// }
 
 }

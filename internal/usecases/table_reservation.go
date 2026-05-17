@@ -31,38 +31,22 @@ func NewCreateReservation(
 func (uc *TableReservation) BookATable(ctx context.Context, _tableId string, _payment payment.DBPayment) (err error) {
 
 	// ## valid cliente -> check
-	fromUser, err := uc.users.FindUserById(ctx, _payment.ClientUUID)
-	if err != nil {
-		return err
-	}
+	fromUser, errUserNotFound := uc.users.FindUserById(ctx, _payment.ClientUUID)
+	if errUserNotFound != nil { return err }
 
 	// ## table reserved -> check
-	table, err := uc.tables.FindTableById(ctx, _tableId)
-	if err != nil {
-		return err
-	}
+	table, errTableNotFound := uc.tables.FindTableById(ctx, _tableId)
+	if errTableNotFound != nil { return err }
 	if table.Reserved {
 		return fmt.Errorf("table is already reserved")
 	}
 
 	// ## payment success -> check
-	info, err := uc.payment.Pay(ctx, _payment)
-	if err != nil {
-		return err
-	}
+	//at this point the errors are recoverable
+	info, errPaymentFailed := uc.payment.Pay(ctx, _payment)
+	if errPaymentFailed != nil { return err }
 
-	// Compensating transaction for payment: refund if later steps fail
-	defer func() {
-		if err != nil {
-			_, refundErr := uc.payment.Refund(ctx, _payment)
-			if refundErr != nil {
-				// We wrap the original error to indicate that refund also failed
-				err = fmt.Errorf("%w (CRITICAL: payment charged but refund failed: %v)", err, refundErr)
-			}
-		}
-	}()
-
-	saveto := payment.DBPayment{
+	_ = payment.DBPayment{
 		TransId:    info.TransId,
 		CreatedAt:  info.CreatedAt,
 		ClientUUID: fromUser.UUID,
@@ -73,9 +57,45 @@ func (uc *TableReservation) BookATable(ctx context.Context, _tableId string, _pa
 	}
 
 	// ## save info on database
-	err = uc.finalize(ctx, _tableId, saveto)
-	if err != nil {
-		return err // The deferred refund will trigger here
+	tableid, errParseInt := strconv.ParseInt(_tableId, 10, 8)
+	if errParseInt != nil { return err }
+
+	// at this point is where everything collapses
+	//TODO: implemment this in a future:
+
+	// actual flow (fragile):
+	// 1. payment processing  ← no return point
+	// 2. save information to db ← might fail
+
+	// ideal:
+	// 1. save info first into database with "pending payments"
+	// 2. process payment
+	// 3. if payment success, "confirmed", else retry with a goroutine or smth
+
+
+	bookingId, errBookingFailed := uc.reserv.Book(ctx,
+		reservation.DBReservation{
+			ClientUUID: _payment.ClientUUID,
+			Table:      int8(tableid),
+			Paid:       true,
+		},
+	)
+
+	//booking was unsuccessful - payment done. try to repay
+	if errBookingFailed  != nil {
+		_, errRefundFailed := uc.payment.Refund(ctx, _payment)
+		if errRefundFailed   != nil {
+			return fmt.Errorf("CRITICAL: payment charged but booking failed and refund failed: %v", errRefundFailed)
+		}
+		return errBookingFailed
+	}
+	
+	errSaveFailed := uc.paydb.SaveToDB(ctx, _payment)
+	if errSaveFailed != nil {
+		cancelErr := uc.reserv.Cancel(ctx, bookingId)
+		if cancelErr != nil {
+			err = fmt.Errorf("%w (CRITICAL: reservation booked but cancellation failed: %v)", err, cancelErr)
+		}
 	}
 
 	return nil
@@ -89,36 +109,8 @@ func (uc *TableReservation) finalize(
 	tableID string,
 	body payment.DBPayment) (err error) {
 
-	tableid, err := strconv.ParseInt(tableID, 10, 8)
-	if err != nil {
-		return err
-	}
+	
 
-	reservationID, err := uc.reserv.Book(ctx,
-		reservation.DBReservation{
-			ClientUUID: body.ClientUUID,
-			Table:      int8(tableid),
-			Paid:       true,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	// Compensating transaction: cancel reservation if later steps fail
-	defer func() {
-		if err != nil {
-			cancelErr := uc.reserv.Cancel(ctx, reservationID)
-			if cancelErr != nil {
-				err = fmt.Errorf("%w (CRITICAL: reservation booked but cancellation failed: %v)", err, cancelErr)
-			}
-		}
-	}()
-
-	err = uc.paydb.SaveToDB(ctx, body)
-	if err != nil {
-		return err // The deferred cancellation will trigger here
-	}
 
 	return nil
 }

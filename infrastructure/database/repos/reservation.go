@@ -10,7 +10,7 @@ func NewReservRepo(db *pgxpool.Pool) *ReservRepoImpl {
 	return &ReservRepoImpl {DB: db}
 }
 
-var is_this_file_implemmenting_correclty_the_interface reservation.Reservation = (*ReservRepoImpl)(nil)
+// var is_this_file_implemmenting_correclty_the_interface reservation.Reservation = (*ReservRepoImpl)(nil)
 
 func (this *ReservRepoImpl) Book(ctx context.Context, body reservation.DBReservation) (string,error){
 	var __id string

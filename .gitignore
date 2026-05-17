@@ -5,3 +5,5 @@
 .vscode
 .DS_Store
 cmd/api/tmp
+tmp
+schema_supabase.sql
