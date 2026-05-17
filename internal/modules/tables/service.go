@@ -12,18 +12,13 @@ func NewService(repo TableModuleInterface) *TableService {
 }
 
 func (this *TableService) ListAllTables(ctx context.Context) ([]DBTables, error) {
-	// delega al repo, no reimplementa
-	// perfectamente puedo poner aqui logica que maneje el ouput
 	return this.repo.ListAllTables(ctx)
 }
 
-func (this *TableService) FindTableById(ctx context.Context, uuid string) (DBTables, error) {
-	return this.repo.FindTableById(ctx, uuid)
-}
-func (this *TableService) SetTableAvailable(ctx context.Context, uuid string) (DBTables, error) {
-	return this.repo.SetTableAvailable(ctx, uuid)
+func (this *TableService) FindTableById(ctx context.Context, id string) (DBTables, error) {
+	return this.repo.FindTableById(ctx, id)
 }
 
-func (this *TableService) SetTableOccupied(ctx context.Context, uuid string) (DBTables, error) {
-	return this.repo.SetTableOccupied(ctx, uuid)
+func (this *TableService) IsAvailable(ctx context.Context, id string) (bool, error) {
+	return this.repo.IsAvailable(ctx, id)
 }

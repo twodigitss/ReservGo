@@ -2,8 +2,8 @@ package payment
 import "context"
 
 type Payment interface {
-	SaveToDB(ctx context.Context, _body DBPayment)(error)
-	GetByTransID(ctx context.Context, _id string)(error)
+	SaveToDB(ctx context.Context, _body DBPayment)(DBPayment,error)
+	GetByTransID(ctx context.Context, _id string)(DBPayment, error)
 }
 
 type Provider interface {

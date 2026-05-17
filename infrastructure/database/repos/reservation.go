@@ -13,31 +13,29 @@ func NewReservRepo(db *pgxpool.Pool) *ReservRepoImpl {
 // var is_this_file_implemmenting_correclty_the_interface reservation.Reservation = (*ReservRepoImpl)(nil)
 
 func (this *ReservRepoImpl) Book(ctx context.Context, body reservation.DBReservation) (string,error){
-	var __id string
+	var reservationID string
 	err := this.DB.QueryRow(ctx,
-		`INSERT INTO reservations_demo.reservations_online 
-		(client_uuid, "table", paid) VALUES 
-		($1, $2, $3) RETURNING id `, body.ClientUUID, body.Table, body.Paid,
-	).Scan(&__id)
+		`INSERT INTO dbv2.reservations 
+		(client_uuid, table_id, paid) VALUES 
+		($1, $2, $3) RETURNING uuid `, body.ClientUUID, body.TableId, body.Paid,
+	).Scan(&reservationID)
 
 	if err != nil { return "",err }
-	return __id, nil
+	return reservationID, nil
 }
 
 func (this *ReservRepoImpl) Cancel(ctx context.Context, _id string) error{
-	_, err := this.DB.Exec(ctx,
-		`DELETE FROM reservations_demo.reservations_online 
-		WHERE id = $1`, _id,
-	)
+	_, err := this.DB.Exec(ctx, `DELETE FROM dbv2.reservations WHERE uuid = $1`, _id,)
 	if err != nil { return err }
 	return nil
 }
 
 func (this *ReservRepoImpl) Update(ctx context.Context, _id string) error{
 	_, err := this.DB.Exec(ctx,
-		`UPDATE reservations_demo.reservations_online 
+		`UPDATE dbv2.reservations 
 		SET visited = TRUE 
-		WHERE id=$1`, _id,
+		SET visited_date = Now() 
+		WHERE uuid=$1`, _id,
 	)
 	if err != nil { return err }
 	return nil
@@ -46,8 +44,7 @@ func (this *ReservRepoImpl) Update(ctx context.Context, _id string) error{
 func (this *ReservRepoImpl) Exists(ctx context.Context, _id string) (bool, error){
 	var exists bool
 	err := this.DB.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 from reservations_demo.reservations_online 
-		WHERE id = $1)`, _id,
+		`SELECT EXISTS(SELECT 1 from dbv2.reservations WHERE uuid = $1)`, _id,
 	).Scan(&exists)
 
 	return exists, err
@@ -56,11 +53,11 @@ func (this *ReservRepoImpl) Exists(ctx context.Context, _id string) (bool, error
 func (this *ReservRepoImpl) GetByID(ctx context.Context, _id string) (reservation.DBReservation, error){
 	var res reservation.DBReservation
 	err := this.DB.QueryRow(ctx,
-		`SELECT id, client_uuid, "table", created_at, paid, visited, visited_date
-		 FROM reservations_demo.reservations_online 
-		 WHERE id = $1`,
+		`SELECT uuid, client_uuid, table_id, created_at, paid, visited, visited_date
+		 FROM dbv2.reservations 
+		 WHERE uuid = $1`,
 		_id,
-	).Scan(&res.ID, &res.ClientUUID, &res.Table, &res.CreatedAt, &res.Paid, &res.Visited, &res.VisitedDate)
+	).Scan(&res.UUID, &res.ClientUUID, &res.TableId, &res.CreatedAt, &res.Paid, &res.Visited, &res.VisitedDate)
 
 	if err != nil {
 		return reservation.DBReservation{}, err
@@ -71,8 +68,8 @@ func (this *ReservRepoImpl) GetByID(ctx context.Context, _id string) (reservatio
 
 func (this *ReservRepoImpl) GetByClientUUID(ctx context.Context, _uuid string) ([]reservation.DBReservation, error){
 	rows, err := this.DB.Query(ctx,
-		`SELECT id, client_uuid, \"table\", created_at, paid, visited, visited_date 
-		 FROM reservations_demo.reservations_online 
+		`SELECT uuid, client_uuid, table_id, created_at, paid, visited, visited_date 
+		 FROM dbv2.reservations 
 		 WHERE client_uuid = $1`,
 		_uuid,
 	)
@@ -83,7 +80,7 @@ func (this *ReservRepoImpl) GetByClientUUID(ctx context.Context, _uuid string) (
 	var reservations []reservation.DBReservation
 	for rows.Next() {
 		var res reservation.DBReservation
-		err := rows.Scan(&res.ID, &res.ClientUUID, &res.Table, &res.CreatedAt, &res.Paid, &res.Visited, &res.VisitedDate)
+		err := rows.Scan(&res.UUID, &res.ClientUUID, &res.TableId, &res.CreatedAt, &res.Paid, &res.Visited, &res.VisitedDate)
 
 		if err != nil { return []reservation.DBReservation{}, err }
 		reservations = append(reservations, res)

@@ -33,19 +33,9 @@ func (this *TableHandler) FindTableById(g *gin.Context){
 	shared.JSON(g, http.StatusOK, result, nil)
 }
 
-func (this *TableHandler) SetTableAvailable(g *gin.Context){
-	var _id string = g.Param("id")
-	result, err := this.Service.SetTableAvailable(g.Request.Context(), _id)
-	if err != nil {
-		shared.JSON(g, http.StatusInternalServerError, nil, err)
-		return
-	}
-	shared.JSON(g, http.StatusOK, result, nil)
-}
-
-func (this *TableHandler) SetTableOccupied(g *gin.Context){
-	var _id string = g.Param("id")
-	result, err := this.Service.SetTableOccupied(g.Request.Context(), _id)
+func (this *TableHandler) IsAvailable(g *gin.Context){
+	var _tableid string = g.Param("id")
+	result, err := this.Service.IsAvailable(g.Request.Context(), _tableid)
 	if err != nil {
 		shared.JSON(g, http.StatusInternalServerError, nil, err)
 		return

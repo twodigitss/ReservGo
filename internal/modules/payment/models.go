@@ -4,8 +4,7 @@ import (
 	"time"
 )
 
-// WARN: the 'Amount' field in the database is 'int8', which only goes to 127.
-
+//this is used for the Payment Provider in infra/
 type ProviderTransaction struct {
 	TransId 			string 		// pi_1NXYZ1234567890abcdef
 	CreatedAt 		time.Time // time.time
@@ -16,29 +15,33 @@ type ProviderTransaction struct {
 	RecieverAcc 	string		// cus_ABC1234567892
 }
 
+//this and below is used for the db provider infra/
 type DBPayment struct { 
-	TransId 			string  	`db:"id"`
-	CreatedAt 		time.Time `db:"created_at"`
-	ClientUUID  	string    `db:"client_uuid"`
-	Amount  			float64   `db:"amount"`
-	Currency  		string    `db:"currency"`
-	FromAcc 			string		`db:"from_account"`
-	ToAcc 				string		`db:"to_account"`
+	UUID 							string  	`db:"uuid"`
+	ReservationUUID  	string    `db:"reservation_uuid"`
+	ClientUUID  			string    `db:"client_uuid"`
+	Amount  					float64   `db:"amount"`
+	Currency  				string    `db:"currency"`
+	FromAcc 					string		`db:"sender_acc"`
+	ToAcc 						string		`db:"reciever_acc"`
+	CreatedAt 				time.Time `db:"created_at"`
 }
 
 type HttpBody struct { 
-	TransId 			string  	`json:"id"`
-	ClientUUID  	string    `json:"client_uuid"`
-	Amount  			float64   `json:"amount"`
-	Currency  		string    `json:"currency"`
-	FromAcc 			string		`json:"from_account"`
+	UUID 							string  	`json:"uuid"`
+	ReservationUUID  	string    `json:"reservation_uuid"`
+	ClientUUID  			string    `json:"client_uuid"`
+	Amount  					float64   `json:"amount"`
+	Currency  				string    `json:"currency"`
+	FromAcc 					string		`json:"sender_acc"`
 }
 
 type HttpRes struct { 
-	TransId 			string  	`json:"id"`
-	CreatedAt 		time.Time `json:"created_at"`
-	ClientUUID  	string    `json:"client_uuid"`
-	Amount  			float64   `json:"amount"`
-	Currency  		string    `json:"currency"`
-	FromAcc 			string		`json:"from_account"`
+	UUID 							string  	`json:"uuid"`
+	ReservationUUID  	string    `json:"reservation_uuid"`
+	ClientUUID  			string    `json:"client_uuid"`
+	Amount  					float64   `json:"amount"`
+	Currency  				string    `json:"currency"`
+	FromAcc 					string		`json:"sender_acc"`
+	CreatedAt 				time.Time `json:"created_at"`
 }

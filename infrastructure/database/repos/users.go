@@ -16,12 +16,13 @@ func NewUserRepo(db *pgxpool.Pool) *UserRepoImpl {
 	return &UserRepoImpl {DB: db}
 }
 
-//Returns all the table users
+//Returns all the table "Users". This is a bad (really really bad ) practice irl.
+//it is merely for demonstrable purposes
 func (this *UserRepoImpl) ListUsers(ctx context.Context) ([]users.DBClient, error) {
 
 	rows, err := this.DB.Query(ctx, 
-		`SELECT uuid,created_at,name,last_name,email 
-		FROM reservations_demo.clients`,
+		`SELECT uuid, name, last_name, email, created_at 
+		FROM dbv2.clients`,
 	)
 
 	if err != nil {
@@ -34,7 +35,7 @@ func (this *UserRepoImpl) ListUsers(ctx context.Context) ([]users.DBClient, erro
 
 	for rows.Next(){
 		var thing users.DBClient
-		err := rows.Scan(&thing.UUID, &thing.CreatedAt, &thing.Name, &thing.LastName, &thing.Email,  )
+		err := rows.Scan(&thing.UUID, &thing.Name, &thing.LastName, &thing.Email, &thing.CreatedAt )
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +53,7 @@ func (this *UserRepoImpl) FindUserById(ctx context.Context, _uuid string)(users.
 	var result users.DBClient;
 	err := this.DB.QueryRow(ctx, 
 		`SELECT uuid, name, last_name, email, created_at 
-		FROM reservations_demo.clients 
+		FROM dbv2.clients 
 		WHERE uuid=$1`, _uuid,
 	).Scan(&result.UUID, &result.Name, &result.LastName, &result.Email, &result.CreatedAt)
 
@@ -80,7 +81,7 @@ func (this *UserRepoImpl) CreateUser(ctx context.Context, body users.DBClient) (
 
 	var query users.DBClient
 	err = this.DB.QueryRow( ctx,
-		`INSERT INTO reservations_demo.clients 
+		`INSERT INTO dbv2.clients 
 		(name, last_name, email) values 
 		($1,$2,$3)
 		RETURNING uuid, created_at; `, 
@@ -103,7 +104,7 @@ func (this *UserRepoImpl) CreateUser(ctx context.Context, body users.DBClient) (
 func (this *UserRepoImpl) DeleteUser(ctx context.Context, _uuid string) (users.DBClient, error) {
 	var query users.DBClient
 	err := this.DB.QueryRow( ctx, 
-		`DELETE FROM reservations_demo.clients 
+		`DELETE FROM dbv2.clients 
 		WHERE uuid = $1
 		RETURNING uuid, email, name, last_name, created_at;`, _uuid,
 	).Scan(&query.UUID, &query.Email, &query.Name, &query.LastName, &query.CreatedAt)

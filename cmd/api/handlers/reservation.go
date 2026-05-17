@@ -19,7 +19,7 @@ func NewReservHandler () *ReservHandler {
 }
 
 func (this *ReservHandler) Book(g *gin.Context){
-	var _body reservation.HttpBodyReserv
+	var _body reservation.HttpBody
 	if err := g.ShouldBindJSON(&_body); err != nil {
 		shared.JSON(g, http.StatusBadRequest, nil, err)
 		return
@@ -105,7 +105,7 @@ func (this *ReservHandler) GetByID(g *gin.Context){
 		return
 	}
 
-	response := reservation.HttpResReserv(obj)
+	response := reservation.HttpRes(obj)
 	shared.JSON(g, http.StatusOK, response, nil)
 }
 
@@ -121,14 +121,14 @@ func (this *ReservHandler) GetByClientUUID(g *gin.Context){
 		shared.JSON(g, http.StatusInternalServerError, nil, err)
 		return
 	}
-	response := make([]reservation.HttpResReserv, len(dblist))
+	response := make([]reservation.HttpRes, len(dblist))
 
 	for i,k := range dblist {
-		response[i] = reservation.HttpResReserv{
-			ID: k.ID,
+		response[i] = reservation.HttpRes{
+			UUID: k.UUID,
 			CreatedAt: k.CreatedAt,
 			ClientUUID: k.ClientUUID,
-			Table: k.Table,
+			TableId: k.TableId,
 			Paid: k.Paid,
 			Visited: k.Visited,
 			VisitedDate: k.VisitedDate,

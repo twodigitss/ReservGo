@@ -34,7 +34,7 @@ func (this *StripeImpl) Refund(ctx context.Context, _body payment.DBPayment) (pa
 	fmt.Println("Processing refund of $1 for $2. check your email.", _body.ClientUUID, _body.Amount)
 
   res := payment.ProviderTransaction{
-		TransId: _body.TransId,
+		TransId: _body.UUID,
 		CreatedAt: _body.CreatedAt,
 		Confirmation: true,
 		TotalAmount: _body.Amount,

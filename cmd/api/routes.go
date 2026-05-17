@@ -12,8 +12,7 @@ func Routes(r *gin.Engine, c Container) {
 	tables := v1.Group("/tables")
 	{	tables.GET("/list", c.Tables.ListAllTables )
 		tables.GET("/find/:id", c.Tables.FindTableById)
-		tables.PUT("/set-available/:id", c.Tables.SetTableAvailable)
-		tables.PUT("/set-occupied/:id", c.Tables.SetTableOccupied)
+		tables.GET("/is-available/:id", c.Tables.IsAvailable)
 	}
 
 	users := v1.Group("/users")
